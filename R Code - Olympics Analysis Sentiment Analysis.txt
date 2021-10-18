@@ -1,0 +1,49 @@
+> # Install packages for data analysis
+> install.packages("pacman")
+> pacman::p_load(pacman, dplyr, GGally, ggplot2, ggthemes, ggvis, httr, lubridate, plotly, rio, rmarkdown, shiny, stringr, tidyr)
+>
+> # import data from Python export for Sentiment Analysis weighted means
+> osaka_sentiment<-read.csv("C:/Users/jenni/osaka_tweet_sentiments.csv",header=TRUE)
+> dressel_sentiment<-read.csv("C:/Users/jenni/dressel_tweet_sentiments.csv",header=TRUE)
+> lee_sentiment<-read.csv("C:/Users/jenni/lee_tweet_sentiments.csv",header=TRUE)
+> kim_sentiment<-read.csv("C:/Users/jenni/kim_tweet_sentiments.csv",header=TRUE)
+> ledecky_sentiment<-read.csv("C:/Users/jenni/ledecky_tweet_sentiments.csv",header=TRUE)
+> shiffrin_sentiment<-read.csv("C:/Users/jenni/shiffrin_tweet_sentiments.csv",header=TRUE)
+> biles_sentiment<-read.csv("C:/Users/jenni/biles_tweet_sentiments.csv",header=TRUE)
+> Olympics_sentiment<-read.csv("C:/Users/jenni/olympics_tweet_sentiments.csv",header=TRUE)
+>
+> # Find total tweet words for each athlete
+> osaka_tot<-sum(osaka_sentiment$topic)
+> dressel_tot<-sum(dressel_sentiment$topic)
+> lee_tot<-sum(lee_sentiment$topic)
+> kim_tot<-sum(kim_sentiment$topic)
+> ledecky_tot<-sum(ledecky_sentiment$topic)
+> shiffrin_tot<-sum(shiffrin_sentiment$topic)
+> biles_tot<-sum(biles_sentiment$topic)
+> tot<-sum(Olympics_sentiment$topic)
+>
+> # Find Weight for each sentiment for each athlete
+> osaka_wt<-(osaka_sentiment$topic)/osaka_tot
+> dressel_wt<-(dressel_sentiment$topic)/dressel_tot
+> kim_wt<-(kim_sentiment$topic)/kim_tot
+> ledecky_wt<-(ledecky_sentiment$topic)/ledecky_tot
+> shiffrin_wt<-(shiffrin_sentiment$topic)/shiffrin_tot
+> biles_wt<-(biles_sentiment$topic)/biles_tot
+> wt<-(Olympics_sentiment$topic)/tot
+> lee_wt<-(lee_sentiment$topic)/lee_tot
+>
+> # Find Weighted Mean for each athlete
+> osaka_mean<-weighted.mean(osaka_sentiment$scores,osaka_wt)
+> dressel_mean<-weighted.mean(dressel_sentiment$scores,dressel_wt)
+> lee_mean<-weighted.mean(lee_sentiment$scores,lee_wt)
+> shiffrin_mean<-weighted.mean(shiffrin_sentiment$scores,shiffrin_wt)
+> kim_mean<-weighted.mean(kim_sentiment$scores,kim_wt)
+> ledecky_mean<-weighted.mean(ledecky_sentiment$scores,ledecky_wt)
+> biles_mean<-weighted.mean(biles_sentiment$scores,biles_wt)
+> mean<-weighted.mean(Olympics_sentiment$scores,wt)
+>
+> # Create new table for plotting with Athlete, Mean Sentiment, and Total Tweet Words
+> Sent_Mean<-data.frame(Athlete=(c('Simone Biles','Chloe Kim','Katie Ledecky','Mikaela Shiffrin','Suni Lee','Caeleb Dressel','Naomi Osaka')),Mean=(c(1.22,1.04,1.49,1.97,1.67,1.9,2.17)),Tweet_Tot=(c(200,46,41,69,142,70,284)))
+>
+> # Write to csv for plotting in Tableau
+> write.csv(Sent_Mean,"C:\\Users\\jenni\\Desktop\\CODING_CERT\\MSDS692\\Sent_Mean.csv",row.names=FALSE)

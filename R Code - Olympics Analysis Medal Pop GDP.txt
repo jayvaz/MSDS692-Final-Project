@@ -1,0 +1,34 @@
+> # Install packages for data analysis
+> install.packages("pacman")
+> pacman::p_load(pacman, dplyr, GGally, ggplot2, ggthemes, ggvis, httr, lubridate, plotly, rio, rmarkdown, shiny, stringr, tidyr)
+>
+> # Import datasets to create one dataset displaying for each country: Medal Count, GDP, Population
+> athlete_events <- read.csv("C:/Users/jenni/Desktop/CODING_CERT/MSDS692/athlete_events_clean.csv")
+> GDP<-read.csv("C:/Users/jenni/Desktop/CODING_CERT/MSDS692/gdp_zip/data/gdp_csv.csv",header=TRUE)
+> Country_Code<-read.csv("C:/Users/jenni/Desktop/CODING_CERT/MSDS692/country_codes_2020.csv",header=TRUE)
+> Country_Population<-read.csv("C:/Users/jenni/Desktop/CODING_CERT/MSDS692/countries_by_population_2019.csv",header=TRUE)
+>
+> # Filter GDP to most current
+> GDP_Current<-GDP%>%filter(Year==2016)
+>
+> # Filter Population to most current year
+> Country_Population<-subset(Country_Population, select=c("name","pop2019"))
+>
+> # Create Medal Count Summary from athlete_events
+> Medal_Count<-athlete_events[,c("Team","NOC","Medal")]
+> Medal_Count[is.na(Medal_Count)]=0
+> Medal_Count[Medal_Count=="Gold"|Medal_Count=="Silver"|Medal_Count=="Bronze"]=1
+> Medal_Count$Medal<-as.integer(Medal_Count$Medal)
+> Medal_Count_sum<-cbind(aggregate(Medal~NOC,Medal_Count,sum))
+>
+> # Bind the three datatables into one
+> one<-Medal_Count_sum
+> two<-GDP_Current[ ,2:4]
+> View(two)
+> names(two)[names(two)=='Country.Code']<-'NOC'
+> one %>% inner_join(two, by = "NOC")
+> Medal_Count_GDP_Pop<-merge(one,two,by.x='NOC')
+> Medal_Count_GDP_Pop<-merge(Medal_Count_GDP_Pop,Country_Population_Codes,by.x="NOC")
+>
+> # write new datatable to csv to import into Tableau for plotting
+> write.csv(Medal_Count_GDP_Pop,"C:\\Users\\jenni\\Desktop\\CODING_CERT\\MSDS692\\Medal_Count_GDP_Pop.csv",row.names=FALSE)

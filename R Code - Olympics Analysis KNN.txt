@@ -1,0 +1,87 @@
+> # Install packages for data analysis
+> install.packages("pacman")
+> pacman::p_load(pacman, dplyr, GGally, ggplot2, ggthemes, ggvis, httr, lubridate, plotly, rio, rmarkdown, shiny, stringr, tidyr)
+>
+> # Import dataset
+> athlete_events <- read.csv("C:/Users/jenni/Desktop/CODING_CERT/MSDS692/120 YEars of Olympic History_Kaggle/athlete_events.csv")
+> 
+> # Clean dataset
+> athlete_events_clean_dropna<-athlete_events%>%drop_na(Height)%>%drop_na(Weight)%>%drop_na(Age)
+>
+> # Remove duplicate athletes for Height/Weight/Age analysis
+> Athletes<-athlete_events_clean_dropna[!duplicated(athlete_events_clean_dropna$Name),]
+> 
+> # Write cleaned csv file for Python import
+> write.csv(athlete_events,"C:\\Users\\jenni\\Desktop\\CODING_CERT\\MSDS692\\athlete_events_clean.csv", row.names = FALSE)
+>
+> # Create count of athletes in each sport for plotting and plot count
+> Athletes_Count<-Athletes%>%group_by(Sport)%>%count(Athletes$Sport)
+> ggplot(Athletes_Count,aes(x=reorder(Sport,-n),y=n))+geom_bar(stat="identity")+theme(axis.text.x=element_text(angle=90))
+>
+> # Create dataframes for popular sports' medal winners and plot regression model
+> # Athletics
+> Athletics<-athlete_events_clean_dropna%>% filter(Sport=="Athletics")
+> Athletics_MedalsONLY<-Athletics%>%drop_na(Medal)
+> Athletics_Plot<-ggplot(Athletics_MedalsONLY,aes(Height,Weight,colour=Age))+geom_point()+stat_smooth(method="lm",col="red")+ggtitle("Athletics Medal Winners Height v. Weight Profile")
+> # Alpine Skiing
+> Alpine_Skiing<-athlete_events_clean_dropna%>% filter(Sport=="Alpine Skiing")
+> Alpine_Skiing_MedalsONLY<-Alpine_Skiing%>%drop_na(Medal)
+> Alpine_Skiing_Plot<-ggplot(Alpine_Skiing_MedalsONLY,aes(Height,Weight,colour=Age))+geom_point()+stat_smooth(method="lm",col="red")+ggtitle("Alpine Skiing Medal Winners Height v. Weight Profile")
+> # Swimming
+> Swimming<-athlete_events_clean_dropna%>% filter(Sport=="Swimming")
+> Swimming_MedalsONLY<-Swimming%>%drop_na(Medal)
+> Swimming_Plot<-ggplot(Swimming_MedalsONLY,aes(Height,Weight,colour=Age))+geom_point()+stat_smooth(method="lm",col="red")+ggtitle("Swimming Medal Winners Height v. Weight Profile")
+> # Speed Skating
+> Speed_Skating<-athlete_events_clean_dropna%>% filter(Sport=="Speed Skating")
+> Speed_Skating_MedalsONLY<-Speed_Skating%>%drop_na(Medal)
+> Speed_Skating_Plot<-ggplot(Speed_Skating_MedalsONLY,aes(Height,Weight,colour=Age))+geom_point()+stat_smooth(method="lm",col="red")+ggtitle("Speed Skating Medal Winners Height v. Weight Profile")
+> # Shooting
+> Shooting<-athlete_events_clean_dropna%>% filter(Sport=="Shooting")
+> Shooting_MedalsONLY<-Shooting%>%drop_na(Medal)
+> Shooting_Plot<-ggplot(Shooting_MedalsONLY,aes(Height,Weight,colour=Age))+geom_point()+stat_smooth(method="lm",col="red")+ggtitle("Shooting Medal Winners Height v. Weight Profile")
+> # Gymnastics
+> Gymnastics<-athlete_events_clean_dropna%>% filter(Sport=="Gymnastics")
+> Gymnastics_MedalsONLY<-Gymnastics%>%drop_na(Medal)
+> Gymnastics_Plot<-ggplot(Shooting_MedalsONLY,aes(Height,Weight,colour=Age))+geom_point()+stat_smooth(method="lm",col="red")+ggtitle("Gymnastics Medal Winners Height v. Weight Profile")
+>
+> # Separate Male and Female sports and begin paring down for Bob and Jane KNN tables
+> Athletes_Summer_M<-subset(Athletes,Season=="Summer"& Sex=="M")
+> Athletes_Winter_F<-subset(Athletes,Season!="Summer"& Sex!="M")
+>
+> # Separate Track from other "Athletics"
+> Athletes_Summer_M$Sport<-ifelse(grepl('metres',Athletes_Summer_M$Event),'Track',Athletes_Summer_M$Sport)
+> Athletes_Summer_M$Sport<-ifelse(grepl('Swimming',Athletes_Summer_M$Event),'Track',Athletes_Summer_M$Sport)
+> Athletes_Summer_M$Sport<-ifelse(grepl('Swimming',Athletes_Summer_M$Event),'Swimming',Athletes_Summer_M$Sport)
+> Athletes_Summer_M$Sport<-ifelse(grepl('Shooting',Athletes_Summer_M$Event),'Shooting',Athletes_Summer_M$Sport)
+> Athletes_Summer_M$Sport<-ifelse(grepl('Canoeing',Athletes_Summer_M$Event),'Canoeing',Athletes_Summer_M$Sport)
+> Athletes_Summer_M$Sport<-ifelse(grepl('Rowing',Athletes_Summer_M$Event),'Rowing',Athletes_Summer_M$Sport)
+> Athletes_Summer_M$Sport<-ifelse(grepl('Cycling',Athletes_Summer_M$Event),'Cycling',Athletes_Summer_M$Sport)
+> Athletes_Summer_M$Sport<-ifelse(grepl('Sailing',Athletes_Summer_M$Event),'Sailing',Athletes_Summer_M$Sport)
+> Athletes_Summer_M$Sport<-ifelse(grepl('Walk',Athletes_Summer_M$Event),'Walking',Athletes_Summer_M$Sport)
+> Athletes_Summer_M$Sport<-ifelse(grepl('Marathon',Athletes_Summer_M$Event),'Marathon',Athletes_Summer_M$Sport)
+>
+> # Plot counts for Male Summer Athletes and Female Winter Athletes
+> ggplot(Athletes_Summer_M_Count,aes(x=reorder(Sport,-n),y=n))+geom_bar(stat="identity")+theme(axis.text.x=element_text(angle=90))
+> ggplot(Athletes_Winter_F_Count,aes(x=reorder(Sport,-n),y=n))+geom_bar(stat="identity")+theme(axis.text.x=element_text(angle=90))
+>
+> # Create Bob and Jane KNN tables from filtered data
+> Bob_KNN<-subset(Athletes_Summer_M,(Sport %in% c("Track","Swimming","Wrestling","Judo","Gymnastics","Table Tennis","Taekwondo")))
+> View(Bob_KNN)
+> Bob_KNN<-Bob_KNN[,c("Sex","Age","Height","Weight","Sport","Season","Team")]
+> Jane_KNN<-subset(Athletes_Winter_F,(Sport %in% c("Alpine Skiing","Cross Country Skiing","Figure Skating","Speed Skating","Biathlon")))
+> View(Jane_KNN)
+> Jane_KNN<-Jane_KNN[c("Sex","Age","Height","Weight","Sport","Season","Team")]
+>
+> # Write Bob KNN and Jane KNN tables to csv for import into Python
+> write.csv(Bob_KNN,"C:\\Users\\jenni\\Desktop\\CODING_CERT\\MSDS692\\Bob_KNN.csv",row.names=FALSE)
+> write.csv(Jane_KNN,"C:\\Users\\jenni\\Desktop\\CODING_CERT\\MSDS692\\Jane_KNN.csv",row.names=FALSE)
+>
+> # Create plots for Jane - Figure Skater and Bob - Swimmer depicting histograms of Age, Height, Weight in each sport and how Jane and Bob compare
+> Figure_Skating<-subset(Jane_KNN,Sport=="Figure Skating")
+> Jane_plot_a<-ggplot(Figure_Skating,aes(x=Age))+geom_histogram(aes(y=..density..),color="black",fill="white")+geom_vline(aes(xintercept=mean(Age)),color="red",linetype="dashed",size=2)+geom_density(alpha=.2,fill="#FF6666")+geom_vline(aes(xintercept=22),color="blue",linetype="dashed",size=2)+ggtitle("Jane Age v. Figure Skater Age")+geom_text(aes(mean(Age),0,label=round(mean(Age),digits=2),vjust=-1))+geom_text(aes(x=22,0,label="22"),vjust=-1)
+> Jane_plot_h<-ggplot(Figure_Skating,aes(x=Height))+geom_histogram(aes(y=..density..),color="black",fill="white")+geom_vline(aes(xintercept=mean(Height)),color="red",linetype="dashed",size=2)+geom_density(alpha=.2,fill="#FF6666")+geom_vline(aes(xintercept=154),color="blue",linetype="dashed",size=2)+ggtitle("Jane Height v. Figure Skater Height")+geom_text(aes(mean(Height),0,label=round(mean(Height),digits=2),vjust=-1))+geom_text(aes(x=154,0,label="154"),vjust=-1)
+> Jane_plot_w<-ggplot(Figure_Skating,aes(x=Weight))+geom_histogram(aes(y=..density..),color="black",fill="white")+geom_vline(aes(xintercept=mean(Weight)),color="red",linetype="dashed",size=2)+geom_density(alpha=.2,fill="#FF6666")+geom_vline(aes(xintercept=47),color="blue",linetype="dashed",size=2)+ggtitle("Jane Weight v. Figure Skater Weight")+geom_text(aes(mean(Weight),0,label=round(mean(Weight),digits=2),vjust=-1))+geom_text(aes(x=47,0,label="47"),vjust=-1)
+> Swimming<-subset(Bob_KNN,Sport=="Swimming")
+> Bob_plot_a<-ggplot(Swimming,aes(x=Age))+geom_histogram(aes(y=..density..),color="black",fill="white")+geom_vline(aes(xintercept=mean(Age)),color="red",linetype="dashed",size=2)+geom_density(alpha=.2,fill="#FF6666")+geom_vline(aes(xintercept=28),color="blue",linetype="dashed",size=2)+ggtitle("Bob Age v. Swimmer Age")+geom_text(aes(mean(Age),0,label=round(mean(Age),digits=2),vjust=-1))+geom_text(aes(x=28,0,label="28"),vjust=-1)
+> Bob_plot_h<-ggplot(Swimming,aes(x=Height))+geom_histogram(aes(y=..density..),color="black",fill="white")+geom_vline(aes(xintercept=mean(Height)),color="red",linetype="dashed",size=2)+geom_density(alpha=.2,fill="#FF6666")+geom_vline(aes(xintercept=193),color="blue",linetype="dashed",size=2)+ggtitle("Bob Height v. Swimmer Height")+geom_text(aes(mean(Height),0,label=round(mean(Height),digits=2),vjust=-1))+geom_text(aes(x=193,0,label="193"),vjust=-1)
+> Bob_plot_w<-ggplot(Swimming,aes(x=Weight))+geom_histogram(aes(y=..density..),color="black",fill="white")+geom_vline(aes(xintercept=mean(Weight)),color="red",linetype="dashed",size=2)+geom_density(alpha=.2,fill="#FF6666")+geom_vline(aes(xintercept=95),color="blue",linetype="dashed",size=2)+ggtitle("Bob Weight v. Swimmer Weight")+geom_text(aes(mean(Weight),0,label=round(mean(Weight),digits=2),vjust=-1))+geom_text(aes(x=95,0,label="95"),vjust=-1)
